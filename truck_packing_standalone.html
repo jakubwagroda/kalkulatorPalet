@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Pakowania Palet</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Ikony SVG
+        const TruckIcon = () => (
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 3h15v13H1zM16 8h4l3 3v5h-7V8z" />
+                <circle cx="5.5" cy="18.5" r="2.5" />
+                <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+        );
+
+        const PackageIcon = () => (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+        );
+
+        const CheckCircleIcon = () => (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+        );
+
+        const XCircleIcon = () => (
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+        );
+
+        const RotateCwIcon = ({ size = 12 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="23 4 23 10 17 10" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+        );
+
+        // Komponent wizualizacji
+        function TruckVisualization({ truckLength, truckWidth, packedPalettes }) {
+            const maxWidth = 1000;
+            const maxHeight = 600;
+            
+            const scaleX = maxWidth / truckLength;
+            const scaleY = maxHeight / truckWidth;
+            const scale = Math.min(scaleX, scaleY) * 0.9;
+            
+            const svgWidth = truckLength * scale;
+            const svgHeight = truckWidth * scale;
+            
+            const colors = [
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
+                '#06b6d4', '#d946ef', '#eab308', '#22c55e', '#a855f7'
+            ];
+            
+            return (
+                <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                    <div className="overflow-x-auto">
+                        <svg 
+                            width={svgWidth} 
+                            height={svgHeight}
+                            className="mx-auto border-2 border-gray-800 bg-gray-50"
+                            style={{ minWidth: '600px' }}
+                        >
+                            <rect 
+                                x="0" 
+                                y="0" 
+                                width={svgWidth} 
+                                height={svgHeight}
+                                fill="#f9fafb"
+                                stroke="#1f2937"
+                                strokeWidth="3"
+                            />
+                            
+                            {Array.from({ length: Math.floor(truckLength / 100) }).map((_, i) => (
+                                <line
+                                    key={`grid-v-${i}`}
+                                    x1={(i + 1) * 100 * scale}
+                                    y1="0"
+                                    x2={(i + 1) * 100 * scale}
+                                    y2={svgHeight}
+                                    stroke="#e5e7eb"
+                                    strokeWidth="1"
+                                    strokeDasharray="4,4"
+                                />
+                            ))}
+                            {Array.from({ length: Math.floor(truckWidth / 100) }).map((_, i) => (
+                                <line
+                                    key={`grid-h-${i}`}
+                                    x1="0"
+                                    y1={(i + 1) * 100 * scale}
+                                    x2={svgWidth}
+                                    y2={(i + 1) * 100 * scale}
+                                    stroke="#e5e7eb"
+                                    strokeWidth="1"
+                                    strokeDasharray="4,4"
+                                />
+                            ))}
+                            
+                            {packedPalettes.map((palette, index) => {
+                                const x = palette.x * scale;
+                                const y = palette.y * scale;
+                                const width = palette.placedLength * scale;
+                                const height = palette.placedWidth * scale;
+                                const color = colors[palette.originalId % colors.length];
+                                
+                                return (
+                                    <g key={index}>
+                                        <rect
+                                            x={x}
+                                            y={y}
+                                            width={width}
+                                            height={height}
+                                            fill={color}
+                                            fillOpacity="0.7"
+                                            stroke={color}
+                                            strokeWidth="2"
+                                        />
+                                        
+                                        <text
+                                            x={x + width / 2}
+                                            y={y + height / 2}
+                                            textAnchor="middle"
+                                            dominantBaseline="middle"
+                                            fill="white"
+                                            fontSize="14"
+                                            fontWeight="bold"
+                                            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                        >
+                                            #{palette.originalId}
+                                            {palette.quantity > 1 && `/${palette.instanceNumber}`}
+                                        </text>
+                                        
+                                        <text
+                                            x={x + width / 2}
+                                            y={y + height / 2 + 18}
+                                            textAnchor="middle"
+                                            dominantBaseline="middle"
+                                            fill="white"
+                                            fontSize="11"
+                                            fontWeight="normal"
+                                            style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                        >
+                                            {palette.placedLength}×{palette.placedWidth}
+                                        </text>
+                                        
+                                        {palette.rotated && (
+                                            <text
+                                                x={x + 8}
+                                                y={y + 18}
+                                                fill="white"
+                                                fontSize="16"
+                                                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                                            >
+                                                ↻
+                                            </text>
+                                        )}
+                                    </g>
+                                );
+                            })}
+                        </svg>
+                    </div>
+                    
+                    <div className="mt-4 flex flex-wrap gap-4 justify-center">
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="w-4 h-4 bg-gray-200 border border-gray-400"></div>
+                            <span>Paka ciężarówki: {truckLength} × {truckWidth} cm</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <div className="w-4 h-4 bg-blue-500 opacity-70"></div>
+                            <span>Palety (kolorowe)</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                            <span>↻</span>
+                            <span>Paleta obrócona</span>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-4 text-center text-sm text-gray-600">
+                        Skala: 1:{Math.round(1/scale)} | Linie pomocnicze co 100 cm (1 metr)
+                    </div>
+                </div>
+            );
+        }
+
+        // Główna aplikacja
+        function TruckPackingApp() {
+            const [truckLength, setTruckLength] = useState(13500);
+            const [truckWidth, setTruckWidth] = useState(245);
+            const [truckHeight, setTruckHeight] = useState(270);
+            const [palettes, setPalettes] = useState([
+                { id: 1, length: 200, width: 100, height: 150, quantity: 2 },
+                { id: 2, length: 145, width: 212, height: 180, quantity: 1 }
+            ]);
+            const [result, setResult] = useState(null);
+
+            const addPalette = () => {
+                setPalettes([...palettes, { 
+                    id: palettes.length + 1, 
+                    length: 120, 
+                    width: 80,
+                    height: 150,
+                    quantity: 1
+                }]);
+            };
+
+            const removePalette = (id) => {
+                setPalettes(palettes.filter(p => p.id !== id));
+            };
+
+            const updatePalette = (id, field, value) => {
+                setPalettes(palettes.map(p => 
+                    p.id === id ? { ...p, [field]: parseFloat(value) || 0 } : p
+                ));
+            };
+
+            const packPalettes = () => {
+                const truck = {
+                    length: truckLength,
+                    width: truckWidth,
+                    height: truckHeight,
+                    area: truckLength * truckWidth
+                };
+
+                const expandedPalettes = [];
+                palettes.forEach(palette => {
+                    for (let i = 0; i < (palette.quantity || 1); i++) {
+                        expandedPalettes.push({
+                            ...palette,
+                            originalId: palette.id,
+                            instanceNumber: i + 1,
+                            area: palette.length * palette.width
+                        });
+                    }
+                });
+
+                const sortedPalettes = expandedPalettes.sort((a, b) => b.area - a.area);
+
+                let packed = [];
+                let freeRects = [{ x: 0, y: 0, width: truck.length, height: truck.width }];
+
+                for (let palette of sortedPalettes) {
+                    let bestRect = null;
+                    let bestOrientation = null;
+                    let bestScore = Infinity;
+                    
+                    const orientations = [
+                        { length: palette.length, width: palette.width, rotated: false },
+                        { length: palette.width, width: palette.length, rotated: true }
+                    ];
+
+                    for (let rect of freeRects) {
+                        for (let orientation of orientations) {
+                            if (orientation.length <= rect.width && orientation.width <= rect.height) {
+                                const wastedArea = (rect.width * rect.height) - (orientation.length * orientation.width);
+                                
+                                if (wastedArea < bestScore) {
+                                    bestScore = wastedArea;
+                                    bestRect = rect;
+                                    bestOrientation = orientation;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!bestRect) {
+                        const totalPalettes = expandedPalettes.length;
+                        setResult({
+                            success: false,
+                            packed: packed,
+                            unpacked: sortedPalettes.slice(packed.length),
+                            utilization: (packed.reduce((sum, p) => sum + p.area, 0) / truck.area * 100).toFixed(2),
+                            totalPalettes: totalPalettes
+                        });
+                        return;
+                    }
+
+                    packed.push({
+                        ...palette,
+                        x: bestRect.x,
+                        y: bestRect.y,
+                        placedLength: bestOrientation.length,
+                        placedWidth: bestOrientation.width,
+                        rotated: bestOrientation.rotated
+                    });
+
+                    freeRects = freeRects.filter(r => r !== bestRect);
+
+                    if (bestRect.x + bestOrientation.length < bestRect.x + bestRect.width) {
+                        freeRects.push({
+                            x: bestRect.x + bestOrientation.length,
+                            y: bestRect.y,
+                            width: bestRect.width - bestOrientation.length,
+                            height: bestRect.height
+                        });
+                    }
+
+                    if (bestRect.y + bestOrientation.width < bestRect.y + bestRect.height) {
+                        freeRects.push({
+                            x: bestRect.x,
+                            y: bestRect.y + bestOrientation.width,
+                            width: bestOrientation.length,
+                            height: bestRect.height - bestOrientation.width
+                        });
+                    }
+
+                    freeRects = freeRects.filter((rect) => {
+                        if (rect.width <= 0 || rect.height <= 0) return false;
+                        if (rect.x + rect.width > truck.length || rect.y + rect.height > truck.width) return false;
+                        return true;
+                    });
+                }
+
+                const maxY = Math.max(...packed.map(p => p.y + p.placedWidth));
+                
+                setResult({
+                    success: true,
+                    packed: packed,
+                    unpacked: [],
+                    utilization: (packed.reduce((sum, p) => sum + p.area, 0) / truck.area * 100).toFixed(2),
+                    usedHeight: maxY,
+                    totalPalettes: expandedPalettes.length
+                });
+            };
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+                            <div className="flex items-center gap-3 mb-6">
+                                <TruckIcon />
+                                <h1 className="text-3xl font-bold text-gray-800">
+                                    Kalkulator Pakowania Palet
+                                </h1>
+                            </div>
+
+                            <div className="mb-8 p-6 bg-indigo-50 rounded-xl">
+                                <h2 className="text-xl font-semibold mb-4 text-indigo-900">
+                                    Wymiary paki ciężarówki
+                                </h2>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Długość (cm)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={truckLength}
+                                            onChange={(e) => setTruckLength(parseFloat(e.target.value) || 0)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Szerokość (cm)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={truckWidth}
+                                            onChange={(e) => setTruckWidth(parseFloat(e.target.value) || 0)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Wysokość (cm)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={truckHeight}
+                                            onChange={(e) => setTruckHeight(parseFloat(e.target.value) || 0)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="mt-3 text-sm text-gray-600">
+                                    Powierzchnia: {(truckLength * truckWidth / 10000).toFixed(2)} m² | Objętość: {(truckLength * truckWidth * truckHeight / 1000000).toFixed(2)} m³
+                                </div>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h2 className="text-xl font-semibold text-gray-800">Palety</h2>
+                                    <button
+                                        onClick={addPalette}
+                                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                                    >
+                                        <PackageIcon />
+                                        Dodaj paletę
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {palettes.map((palette, index) => (
+                                        <div key={palette.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                                            <div className="font-semibold text-gray-700 w-8">#{index + 1}</div>
+                                            <div className="flex-1 grid grid-cols-4 gap-3">
+                                                <div>
+                                                    <label className="block text-xs text-gray-600 mb-1">Długość (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={palette.length}
+                                                        onChange={(e) => updatePalette(palette.id, 'length', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs text-gray-600 mb-1">Szerokość (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={palette.width}
+                                                        onChange={(e) => updatePalette(palette.id, 'width', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs text-gray-600 mb-1">Wysokość (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={palette.height}
+                                                        onChange={(e) => updatePalette(palette.id, 'height', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs text-gray-600 mb-1">Ilość (szt)</label>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={palette.quantity}
+                                                        onChange={(e) => updatePalette(palette.id, 'quantity', e.target.value)}
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600 w-24">
+                                                {(palette.length * palette.width / 10000).toFixed(2)} m²
+                                            </div>
+                                            <button
+                                                onClick={() => removePalette(palette.id)}
+                                                className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                                            >
+                                                Usuń
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={packPalettes}
+                                disabled={palettes.length === 0}
+                                className="w-full py-4 bg-indigo-600 text-white text-lg font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                            >
+                                Sprawdź możliwość zapakowania
+                            </button>
+                        </div>
+
+                        {result && (
+                            <div className={`bg-white rounded-2xl shadow-xl p-8 ${
+                                result.success ? 'border-4 border-green-400' : 'border-4 border-red-400'
+                            }`}>
+                                <div className="flex items-center gap-4 mb-6">
+                                    {result.success ? (
+                                        <>
+                                            <CheckCircleIcon />
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-green-700">
+                                                    Wszystkie palety zmieszczą się!
+                                                </h2>
+                                                <p className="text-gray-600">Wykorzystanie przestrzeni: {result.utilization}%</p>
+                                                <p className="text-gray-600">Łącznie palet: {result.totalPalettes} szt.</p>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <XCircleIcon />
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-red-700">
+                                                    Nie wszystkie palety się zmieszczą
+                                                </h2>
+                                                <p className="text-gray-600">
+                                                    Zmieściło się: {result.packed.length}/{result.totalPalettes} palet
+                                                </p>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-3 text-green-700">
+                                            ✓ Spakowane ({result.packed.length})
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {result.packed.map((p, idx) => (
+                                                <div key={idx} className="p-3 bg-green-50 rounded-lg text-sm">
+                                                    <div className="font-semibold">
+                                                        Paleta #{p.originalId}
+                                                        {p.quantity > 1 && <span className="text-gray-500"> (szt. {p.instanceNumber}/{p.quantity})</span>}
+                                                    </div>
+                                                    <div className="text-gray-600">
+                                                        {p.placedLength} × {p.placedWidth} × {p.height} cm
+                                                        {p.rotated && (
+                                                            <span className="ml-2 inline-flex items-center gap-1 text-blue-600">
+                                                                <RotateCwIcon size={12} />
+                                                                obrócona
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        Pozycja: x={p.x}cm, y={p.y}cm
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {result.unpacked.length > 0 && (
+                                        <div>
+                                            <h3 className="text-lg font-semibold mb-3 text-red-700">
+                                                ✗ Nie zmieściły się ({result.unpacked.length})
+                                            </h3>
+                                            <div className="space-y-2">
+                                                {result.unpacked.map((p, idx) => (
+                                                    <div key={idx} className="p-3 bg-red-50 rounded-lg text-sm">
+                                                        <div className="font-semibold">
+                                                            Paleta #{p.originalId}
+                                                            {p.quantity > 1 && <span className="text-gray-500"> (szt. {p.instanceNumber}/{p.quantity})</span>}
+                                                        </div>
+                                                        <div className="text-gray-600">
+                                                            {p.length} × {p.width} × {p.height} cm
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {result.success && (
+                                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                                        <h3 className="font-semibold text-blue-900 mb-2">Statystyki:</h3>
+                                        <div className="text-sm text-gray-700 space-y-1">
+                                            <div>• Wykorzystana wysokość paki: {result.usedHeight} cm z {truckWidth} cm</div>
+                                            <div>• Wykorzystanie powierzchni: {result.utilization}%</div>
+                                            <div>• Ilość palet: {result.packed.length}</div>
+                                            <div>• Ilość obrotów: {result.packed.filter(p => p.rotated).length}</div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {result && result.packed.length > 0 && (
+                                    <div className="mt-6">
+                                        <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                                            Wizualizacja załadunku (widok z góry)
+                                        </h3>
+                                        <TruckVisualization 
+                                            truckLength={truckLength}
+                                            truckWidth={truckWidth}
+                                            packedPalettes={result.packed}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TruckPackingApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
