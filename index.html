@@ -1,13 +1,42 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pakowania Palet</title>
+    <title>Vesuvius Truck Loading Calculator</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --vesuvius-primary: #B14C08;
+            --vesuvius-rust: #802414;
+            --vesuvius-burnt-orange: #D27336;
+            --vesuvius-red: #F33B28;
+            --vesuvius-tan: #9F715D;
+            --vesuvius-light-orange: #F3B36C;
+            --vesuvius-dark: #260E0B;
+        }
+        body {
+            background: linear-gradient(135deg, #FFF5EE 0%, #FFE4D1 100%);
+        }
+        .vesuvius-gradient {
+            background: linear-gradient(135deg, var(--vesuvius-primary) 0%, var(--vesuvius-rust) 100%);
+        }
+        .vesuvius-btn {
+            background: var(--vesuvius-primary);
+            transition: all 0.3s ease;
+        }
+        .vesuvius-btn:hover {
+            background: var(--vesuvius-rust);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(177, 76, 8, 0.3);
+        }
+        .vesuvius-header {
+            background: linear-gradient(135deg, var(--vesuvius-primary) 0%, var(--vesuvius-burnt-orange) 100%);
+        }
+    </style>
 </head>
 <body>
     <div id="root"></div>
@@ -64,28 +93,29 @@
             const svgWidth = truckLength * scale;
             const svgHeight = truckWidth * scale;
             
+            // Vesuvius color palette
             const colors = [
-                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
-                '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16',
-                '#06b6d4', '#d946ef', '#eab308', '#22c55e', '#a855f7'
+                '#B14C08', '#F33B28', '#D27336', '#F3B36C', '#802414',
+                '#9F715D', '#B14C08', '#F33B28', '#D27336', '#F3B36C',
+                '#802414', '#9F715D', '#B14C08', '#F33B28', '#D27336'
             ];
             
             return (
-                <div className="bg-white p-6 rounded-xl border-2 border-gray-200">
+                <div className="bg-white p-6 rounded-xl border-2" style={{ borderColor: '#D27336' }}>
                     <div className="overflow-x-auto">
                         <svg 
                             width={svgWidth} 
                             height={svgHeight}
-                            className="mx-auto border-2 border-gray-800 bg-gray-50"
-                            style={{ minWidth: '600px' }}
+                            className="mx-auto border-2 bg-gray-50"
+                            style={{ minWidth: '600px', borderColor: '#802414' }}
                         >
                             <rect 
                                 x="0" 
                                 y="0" 
                                 width={svgWidth} 
                                 height={svgHeight}
-                                fill="#f9fafb"
-                                stroke="#1f2937"
+                                fill="#FFF5EE"
+                                stroke="#802414"
                                 strokeWidth="3"
                             />
                             
@@ -180,21 +210,21 @@
                     
                     <div className="mt-4 flex flex-wrap gap-4 justify-center">
                         <div className="flex items-center gap-2 text-sm">
-                            <div className="w-4 h-4 bg-gray-200 border border-gray-400"></div>
-                            <span>Paka ciężarówki: {truckLength} × {truckWidth} cm</span>
+                            <div className="w-4 h-4 border-2" style={{ background: '#FFF5EE', borderColor: '#802414' }}></div>
+                            <span>Truck bed: {truckLength} × {truckWidth} cm</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                            <div className="w-4 h-4 bg-blue-500 opacity-70"></div>
-                            <span>Palety (kolorowe)</span>
+                            <div className="w-4 h-4 opacity-70" style={{ background: '#B14C08' }}></div>
+                            <span>Pallets (colored)</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                             <span>↻</span>
-                            <span>Paleta obrócona</span>
+                            <span>Rotated pallet</span>
                         </div>
                     </div>
                     
-                    <div className="mt-4 text-center text-sm text-gray-600">
-                        Skala: 1:{Math.round(1/scale)} | Linie pomocnicze co 100 cm (1 metr)
+                    <div className="mt-4 text-center text-sm" style={{ color: '#802414' }}>
+                        Scale: 1:{Math.round(1/scale)} | Grid lines every 100 cm (1 meter)
                     </div>
                 </div>
             );
@@ -341,123 +371,152 @@
             };
 
             return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+                <div className="min-h-screen p-8" style={{ background: 'linear-gradient(135deg, #FFF5EE 0%, #FFE4D1 100%)' }}>
                     <div className="max-w-6xl mx-auto">
-                        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-                            <div className="flex items-center gap-3 mb-6">
+                        {/* Vesuvius Header */}
+                        <div className="vesuvius-header rounded-2xl shadow-2xl p-6 mb-6 text-white">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="bg-white rounded-lg p-3">
+                                        <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+                                            <circle cx="50" cy="50" r="45" fill="#B14C08"/>
+                                            <path d="M30 70 L50 30 L70 70 Z" fill="#F3B36C"/>
+                                            <circle cx="50" cy="45" r="8" fill="#F33B28"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h1 className="text-3xl font-bold">VESUVIUS</h1>
+                                        <p className="text-lg opacity-90">Truck Loading Calculator</p>
+                                    </div>
+                                </div>
                                 <TruckIcon />
-                                <h1 className="text-3xl font-bold text-gray-800">
-                                    Kalkulator Pakowania Palet
-                                </h1>
                             </div>
+                        </div>
 
-                            <div className="mb-8 p-6 bg-indigo-50 rounded-xl">
-                                <h2 className="text-xl font-semibold mb-4 text-indigo-900">
-                                    Wymiary paki ciężarówki
+                        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+                            <div className="mb-8 p-6 rounded-xl" style={{ background: 'linear-gradient(135deg, #FFF5EE 0%, #FFE4D1 100%)' }}>
+                                <h2 className="text-xl font-semibold mb-4" style={{ color: '#802414' }}>
+                                    Truck Bed Dimensions
                                 </h2>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Długość (cm)
+                                        <label className="block text-sm font-medium mb-2" style={{ color: '#802414' }}>
+                                            Length (cm)
                                         </label>
                                         <input
                                             type="number"
                                             value={truckLength}
                                             onChange={(e) => setTruckLength(parseFloat(e.target.value) || 0)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:border-transparent"
+                                            style={{ borderColor: '#D27336', outline: 'none' }}
+                                            onFocus={(e) => e.target.style.borderColor = '#B14C08'}
+                                            onBlur={(e) => e.target.style.borderColor = '#D27336'}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Szerokość (cm)
+                                        <label className="block text-sm font-medium mb-2" style={{ color: '#802414' }}>
+                                            Width (cm)
                                         </label>
                                         <input
                                             type="number"
                                             value={truckWidth}
                                             onChange={(e) => setTruckWidth(parseFloat(e.target.value) || 0)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:border-transparent"
+                                            style={{ borderColor: '#D27336', outline: 'none' }}
+                                            onFocus={(e) => e.target.style.borderColor = '#B14C08'}
+                                            onBlur={(e) => e.target.style.borderColor = '#D27336'}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Wysokość (cm)
+                                        <label className="block text-sm font-medium mb-2" style={{ color: '#802414' }}>
+                                            Height (cm)
                                         </label>
                                         <input
                                             type="number"
                                             value={truckHeight}
                                             onChange={(e) => setTruckHeight(parseFloat(e.target.value) || 0)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                            className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:border-transparent"
+                                            style={{ borderColor: '#D27336', outline: 'none' }}
+                                            onFocus={(e) => e.target.style.borderColor = '#B14C08'}
+                                            onBlur={(e) => e.target.style.borderColor = '#D27336'}
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-3 text-sm text-gray-600">
-                                    Powierzchnia: {(truckLength * truckWidth / 10000).toFixed(2)} m² | Objętość: {(truckLength * truckWidth * truckHeight / 1000000).toFixed(2)} m³
+                                <div className="mt-3 text-sm" style={{ color: '#802414' }}>
+                                    Area: {(truckLength * truckWidth / 10000).toFixed(2)} m² | Volume: {(truckLength * truckWidth * truckHeight / 1000000).toFixed(2)} m³
                                 </div>
                             </div>
 
                             <div className="mb-6">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h2 className="text-xl font-semibold text-gray-800">Palety</h2>
+                                    <h2 className="text-xl font-semibold" style={{ color: '#802414' }}>Pallets</h2>
                                     <button
                                         onClick={addPalette}
-                                        className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                                        className="flex items-center gap-2 px-4 py-2 text-white rounded-lg vesuvius-btn"
                                     >
                                         <PackageIcon />
-                                        Dodaj paletę
+                                        Add Pallet
                                     </button>
                                 </div>
 
                                 <div className="space-y-3">
                                     {palettes.map((palette, index) => (
-                                        <div key={palette.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                                            <div className="font-semibold text-gray-700 w-8">#{index + 1}</div>
+                                        <div key={palette.id} className="flex items-center gap-4 p-4 rounded-lg" style={{ background: '#FFF5EE' }}>
+                                            <div className="font-semibold w-8" style={{ color: '#802414' }}>#{index + 1}</div>
                                             <div className="flex-1 grid grid-cols-4 gap-3">
                                                 <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">Długość (cm)</label>
+                                                    <label className="block text-xs mb-1" style={{ color: '#802414' }}>Length (cm)</label>
                                                     <input
                                                         type="number"
                                                         value={palette.length}
                                                         onChange={(e) => updatePalette(palette.id, 'length', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                        className="w-full px-3 py-2 border-2 rounded-lg"
+                                                        style={{ borderColor: '#D27336' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">Szerokość (cm)</label>
+                                                    <label className="block text-xs mb-1" style={{ color: '#802414' }}>Width (cm)</label>
                                                     <input
                                                         type="number"
                                                         value={palette.width}
                                                         onChange={(e) => updatePalette(palette.id, 'width', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                        className="w-full px-3 py-2 border-2 rounded-lg"
+                                                        style={{ borderColor: '#D27336' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">Wysokość (cm)</label>
+                                                    <label className="block text-xs mb-1" style={{ color: '#802414' }}>Height (cm)</label>
                                                     <input
                                                         type="number"
                                                         value={palette.height}
                                                         onChange={(e) => updatePalette(palette.id, 'height', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                        className="w-full px-3 py-2 border-2 rounded-lg"
+                                                        style={{ borderColor: '#D27336' }}
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs text-gray-600 mb-1">Ilość (szt)</label>
+                                                    <label className="block text-xs mb-1" style={{ color: '#802414' }}>Quantity (pcs)</label>
                                                     <input
                                                         type="number"
                                                         min="1"
                                                         value={palette.quantity}
                                                         onChange={(e) => updatePalette(palette.id, 'quantity', e.target.value)}
-                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                                                        className="w-full px-3 py-2 border-2 rounded-lg"
+                                                        style={{ borderColor: '#D27336' }}
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="text-sm text-gray-600 w-24">
+                                            <div className="text-sm w-24" style={{ color: '#802414' }}>
                                                 {(palette.length * palette.width / 10000).toFixed(2)} m²
                                             </div>
                                             <button
                                                 onClick={() => removePalette(palette.id)}
-                                                className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                                                className="px-3 py-2 text-white rounded-lg transition"
+                                                style={{ background: '#F33B28' }}
+                                                onMouseOver={(e) => e.target.style.background = '#802414'}
+                                                onMouseOut={(e) => e.target.style.background = '#F33B28'}
                                             >
-                                                Usuń
+                                                Remove
                                             </button>
                                         </div>
                                     ))}
@@ -467,37 +526,37 @@
                             <button
                                 onClick={packPalettes}
                                 disabled={palettes.length === 0}
-                                className="w-full py-4 bg-indigo-600 text-white text-lg font-semibold rounded-xl hover:bg-indigo-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                className="w-full py-4 text-white text-lg font-semibold rounded-xl transition disabled:bg-gray-300 disabled:cursor-not-allowed vesuvius-btn"
                             >
-                                Sprawdź możliwość zapakowania
+                                Calculate Loading Capacity
                             </button>
                         </div>
 
                         {result && (
                             <div className={`bg-white rounded-2xl shadow-xl p-8 ${
-                                result.success ? 'border-4 border-green-400' : 'border-4 border-red-400'
-                            }`}>
+                                result.success ? 'border-4' : 'border-4'
+                            }`} style={{ borderColor: result.success ? '#10b981' : '#F33B28' }}>
                                 <div className="flex items-center gap-4 mb-6">
                                     {result.success ? (
                                         <>
                                             <CheckCircleIcon />
                                             <div>
                                                 <h2 className="text-2xl font-bold text-green-700">
-                                                    Wszystkie palety zmieszczą się!
+                                                    All pallets will fit!
                                                 </h2>
-                                                <p className="text-gray-600">Wykorzystanie przestrzeni: {result.utilization}%</p>
-                                                <p className="text-gray-600">Łącznie palet: {result.totalPalettes} szt.</p>
+                                                <p className="text-gray-600">Space utilization: {result.utilization}%</p>
+                                                <p className="text-gray-600">Total pallets: {result.totalPalettes} pcs</p>
                                             </div>
                                         </>
                                     ) : (
                                         <>
                                             <XCircleIcon />
                                             <div>
-                                                <h2 className="text-2xl font-bold text-red-700">
-                                                    Nie wszystkie palety się zmieszczą
+                                                <h2 className="text-2xl font-bold" style={{ color: '#F33B28' }}>
+                                                    Not all pallets will fit
                                                 </h2>
                                                 <p className="text-gray-600">
-                                                    Zmieściło się: {result.packed.length}/{result.totalPalettes} palet
+                                                    Fitted: {result.packed.length}/{result.totalPalettes} pallets
                                                 </p>
                                             </div>
                                         </>
@@ -507,26 +566,26 @@
                                 <div className="grid grid-cols-2 gap-6">
                                     <div>
                                         <h3 className="text-lg font-semibold mb-3 text-green-700">
-                                            ✓ Spakowane ({result.packed.length})
+                                            ✓ Packed ({result.packed.length})
                                         </h3>
                                         <div className="space-y-2">
                                             {result.packed.map((p, idx) => (
                                                 <div key={idx} className="p-3 bg-green-50 rounded-lg text-sm">
                                                     <div className="font-semibold">
-                                                        Paleta #{p.originalId}
-                                                        {p.quantity > 1 && <span className="text-gray-500"> (szt. {p.instanceNumber}/{p.quantity})</span>}
+                                                        Pallet #{p.originalId}
+                                                        {p.quantity > 1 && <span className="text-gray-500"> (pc. {p.instanceNumber}/{p.quantity})</span>}
                                                     </div>
                                                     <div className="text-gray-600">
                                                         {p.placedLength} × {p.placedWidth} × {p.height} cm
                                                         {p.rotated && (
-                                                            <span className="ml-2 inline-flex items-center gap-1 text-blue-600">
+                                                            <span className="ml-2 inline-flex items-center gap-1" style={{ color: '#B14C08' }}>
                                                                 <RotateCwIcon size={12} />
-                                                                obrócona
+                                                                rotated
                                                             </span>
                                                         )}
                                                     </div>
                                                     <div className="text-xs text-gray-500">
-                                                        Pozycja: x={p.x}cm, y={p.y}cm
+                                                        Position: x={p.x}cm, y={p.y}cm
                                                     </div>
                                                 </div>
                                             ))}
@@ -535,15 +594,15 @@
 
                                     {result.unpacked.length > 0 && (
                                         <div>
-                                            <h3 className="text-lg font-semibold mb-3 text-red-700">
-                                                ✗ Nie zmieściły się ({result.unpacked.length})
+                                            <h3 className="text-lg font-semibold mb-3" style={{ color: '#F33B28' }}>
+                                                ✗ Did not fit ({result.unpacked.length})
                                             </h3>
                                             <div className="space-y-2">
                                                 {result.unpacked.map((p, idx) => (
-                                                    <div key={idx} className="p-3 bg-red-50 rounded-lg text-sm">
+                                                    <div key={idx} className="p-3 rounded-lg text-sm" style={{ background: '#FFE4D1' }}>
                                                         <div className="font-semibold">
-                                                            Paleta #{p.originalId}
-                                                            {p.quantity > 1 && <span className="text-gray-500"> (szt. {p.instanceNumber}/{p.quantity})</span>}
+                                                            Pallet #{p.originalId}
+                                                            {p.quantity > 1 && <span className="text-gray-500"> (pc. {p.instanceNumber}/{p.quantity})</span>}
                                                         </div>
                                                         <div className="text-gray-600">
                                                             {p.length} × {p.width} × {p.height} cm
@@ -556,21 +615,21 @@
                                 </div>
 
                                 {result.success && (
-                                    <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                                        <h3 className="font-semibold text-blue-900 mb-2">Statystyki:</h3>
+                                    <div className="mt-6 p-4 rounded-lg" style={{ background: 'linear-gradient(135deg, #FFF5EE 0%, #FFE4D1 100%)' }}>
+                                        <h3 className="font-semibold mb-2" style={{ color: '#802414' }}>Statistics:</h3>
                                         <div className="text-sm text-gray-700 space-y-1">
-                                            <div>• Wykorzystana wysokość paki: {result.usedHeight} cm z {truckWidth} cm</div>
-                                            <div>• Wykorzystanie powierzchni: {result.utilization}%</div>
-                                            <div>• Ilość palet: {result.packed.length}</div>
-                                            <div>• Ilość obrotów: {result.packed.filter(p => p.rotated).length}</div>
+                                            <div>• Used truck bed height: {result.usedHeight} cm of {truckWidth} cm</div>
+                                            <div>• Space utilization: {result.utilization}%</div>
+                                            <div>• Number of pallets: {result.packed.length}</div>
+                                            <div>• Number of rotations: {result.packed.filter(p => p.rotated).length}</div>
                                         </div>
                                     </div>
                                 )}
 
                                 {result && result.packed.length > 0 && (
                                     <div className="mt-6">
-                                        <h3 className="text-lg font-semibold mb-4 text-gray-800">
-                                            Wizualizacja załadunku (widok z góry)
+                                        <h3 className="text-lg font-semibold mb-4" style={{ color: '#802414' }}>
+                                            Loading Visualization (top view)
                                         </h3>
                                         <TruckVisualization 
                                             truckLength={truckLength}
